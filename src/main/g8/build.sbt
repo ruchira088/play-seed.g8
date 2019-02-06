@@ -4,7 +4,7 @@ lazy val root =
   (project in file("."))
     .enablePlugins(PlayScala, BuildInfoPlugin)
     .settings(
-      name := "my-play-project",
+      name := "$name;format="normalize"$",
       organization := "com.ruchij",
       version := "0.0.1",
       scalaVersion := SCALA_VERSION,
