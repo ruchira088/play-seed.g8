@@ -16,4 +16,4 @@ lazy val root =
 
 lazy val rootDependencies = Seq(guice, jodaTime)
 
-lazy val rootTestDependencies = Seq(scalaTestPlusPlay)
+lazy val rootTestDependencies = Seq(scalaTestPlusPlay, pegdown)
