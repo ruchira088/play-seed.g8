@@ -7,6 +7,7 @@ lazy val root =
       name := "$name;format="normalize"$",
       organization := "com.ruchij",
       version := "0.0.1",
+      maintainer := "ruchira088@gmail.com",
       scalaVersion := SCALA_VERSION,
       buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "com.eed3si9n.ruchij",

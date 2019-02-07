@@ -8,7 +8,7 @@ object Matchers {
     (left: Option[String]) =>
       MatchResult(
         left.contains(ContentTypes.JSON),
-        left.fold("ContentType was empty")(contentType => contentType + " != " + ContentTypes.JSON),
+        left.fold("ContentType was empty")(contentType => s"$contentType != ${ContentTypes.JSON}"),
         "ContentType was " + ContentTypes.JSON
       )
 
@@ -16,7 +16,7 @@ object Matchers {
     (left: JsValue) =>
       MatchResult(
         writes.writes(value).equals(left),
-        Json.prettyPrint(left) + " does NOT equal JSON " + Json.prettyPrint(writes.writes(value)),
-        left + " equals JSON " + writes.writes(value)
+        s"${Json.prettyPrint(left)} does NOT equal JSON ${Json.prettyPrint(writes.writes(value))}",
+        s"$left equals JSON ${Json.prettyPrint(writes.writes(value))}"
       )
 }
