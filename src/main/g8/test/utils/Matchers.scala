@@ -9,7 +9,7 @@ object Matchers {
       MatchResult(
         left.contains(ContentTypes.JSON),
         left.fold("ContentType was empty")(contentType => s"$contentType != ${ContentTypes.JSON}"),
-        "ContentType was " + ContentTypes.JSON
+        s"ContentType was ${ContentTypes.JSON}"
       )
 
   def equalJsonOf[A](value: A)(implicit writes: OWrites[A]): Matcher[JsValue] =
