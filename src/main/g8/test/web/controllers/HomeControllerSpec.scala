@@ -2,11 +2,9 @@ package web.controllers
 
 import bindings.GuiceUtils.application
 import bindings.GuiceBinding._
-import com.eed3si9n.ruchij.BuildInfo
 import config.SystemUtilities
 import org.joda.time.DateTime
 import org.scalatestplus.play._
-import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test._
 import utils.Matchers._
