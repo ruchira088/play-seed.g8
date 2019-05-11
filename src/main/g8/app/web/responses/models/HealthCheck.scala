@@ -15,7 +15,7 @@ case class HealthCheck(
   javaVersion: String,
   sbtVersion: String,
   scalaVersion: String,
-  timeStamp: DateTime,
+  timestamp: DateTime,
   osName: String
 )
 
