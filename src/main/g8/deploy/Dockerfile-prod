@@ -3,12 +3,12 @@ FROM openjdk:8-jdk
 RUN apt-get update && \
     apt-get install apt-transport-https bc ca-certificates software-properties-common -y
 
-WORKDIR /opt/$name;format="normalize"$
+WORKDIR /opt
 
-COPY ./$name;format="normalize"$ .
+COPY . .
 
 EXPOSE 9000
 
 ENTRYPOINT ["bash"]
 
-CMD ["/opt/$name;format="normalize"$/bin/$name;format="normalize"$"]
+CMD ["/opt/bin/$name;format="normalize"$"]
