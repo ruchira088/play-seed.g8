@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  namespace: $name;format="normalize"$
+  name: $name;format="normalize"$-{{{ branch }}}-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+    - secretName: {{{ branch }}}-$name;format="normalize"$-tls
+      hosts:
+        - {{{ branch }}}.$name;format="normalize"$.ruchij.com
+  rules:
+    - host: {{{ branch }}}.$name;format="normalize"$.ruchij.com
+      http:
+        paths:
+          - backend:
+              serviceName: $name;format="normalize"$-{{{ branch }}}-service
+              servicePort: 9000

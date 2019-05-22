@@ -1,0 +1,222 @@
+version: 2
+
+alias:
+  - &install-sbt
+    name: Install sbt
+    command: |
+      apt-get update && \
+      apt-get install apt-transport-https bc ca-certificates software-properties-common -y
+
+      echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list && \
+      apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
+      apt-get update && \
+      apt-get install sbt -y
+  - &restore-sbt-cache
+    keys:
+      - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
+      - sbt-cache
+  - &install-terraform
+    name: Install Terraform
+    command: |
+      apt update && \
+      apt install unzip curl -y
+
+      curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip && \
+      unzip -d /tmp /tmp/terraform.zip && \
+      chmod +x /tmp/terraform && \
+      mv /tmp/terraform /usr/local/bin
+
+jobs:
+  create_aws_resources:
+    docker:
+      - image: ubuntu
+    steps:
+      - run: *install-terraform
+      - checkout
+      - run:
+          name: Create common AWS resources
+          command: |
+            terraform init deploy/terraform/common
+            terraform apply -auto-approve deploy/terraform/common
+
+  compile_and_test:
+    docker:
+      - image: openjdk:8-jdk
+    steps:
+      - run: *install-sbt
+      - checkout
+      - restore_cache: *restore-sbt-cache
+      - run:
+          name: Fetch dependencies
+          command: sbt update
+      - run:
+          name: Compile
+          command: sbt compile
+      - run:
+          name: Run unit tests
+          command: sbt test
+      - save_cache:
+          key: sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
+          paths:
+            - ~/.sbt
+            - ~/.ivy2
+
+  push_docker_image:
+    docker:
+      - image: openjdk:8-jdk
+    steps:
+      - setup_remote_docker:
+          version: 18.09.3
+      - run: *install-sbt
+      - run:
+          name: Install Docker client
+          command: |
+            apt update \
+            && apt install curl -y
+
+            curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-18.09.6.tgz && \
+            tar -xv -C /tmp -f /tmp/docker.tgz && \
+            mv /tmp/docker/* /usr/local/bin
+      - run:
+          name: Install AWS CLI
+          command: |
+            apt update && \
+            apt install python-pip python-dev build-essential -y
+
+            pip install awscli --upgrade --user && \
+            ln -sf \$HOME/.local/bin/aws /usr/local/bin
+      - run:
+          name: Install jq
+          command: |
+            apt update && \
+            apt install jq -y
+      - run: *install-terraform
+      - checkout
+      - restore_cache: *restore-sbt-cache
+      - run:
+          name: Build application binary
+          command: sbt dist
+      - run:
+          name: Build Docker image
+          command: docker build -t $name;format="normalize"$ -f Dockerfile-prod .
+      - run:
+          name: Login to ECR
+          command: aws ecr get-login --no-include-email --region ap-southeast-2 | bash
+      - run:
+          name: Push Docker images to ECR
+          command: |
+            cd deploy/terraform/common && terraform init && cd ../../../
+
+            ecr=`cd deploy/terraform/common && terraform output -json | jq .ecr_url.value | tr -d '"' && cd ../../../`
+            git_commit_hash=`git rev-parse --short HEAD`
+            git_branch=`git rev-parse --abbrev-ref HEAD | tr [:upper:] [:lower:] | tr ' ' '-'`
+            build_timestamp=`date +%F-%T | tr ':' '-'`
+
+            docker_tags=(\$git_commit_hash \$git_branch-\$CIRCLE_BUILD_NUM \$build_timestamp-\$git_branch)
+
+            for tag in "\${docker_tags[@]}"
+            do
+              docker tag $name;format="normalize"$:latest "\$ecr:\$tag"
+              docker push "\$ecr:\$tag"
+            done
+
+            cat > data.json << EOF
+            {
+              "dockerImage": "\$ecr:\$git_branch-\$CIRCLE_BUILD_NUM",
+              "branch": "\$git_branch"
+            }
+            EOF
+
+            cat > config-values.yml << EOF
+              GIT_COMMIT: \$git_commit_hash
+              GIT_BRANCH: \$git_branch
+              BUILD_TIMESTAMP: \$build_timestamp
+            EOF
+      - persist_to_workspace:
+          root: .
+          paths:
+            - data.json
+            - config-values.yml
+
+  deploy_api:
+    docker:
+      - image: ubuntu
+    steps:
+      - run:
+          name: Install Git and CA-certificates
+          command: |
+            apt-get update && \
+            apt-get install git apt-transport-https bc ca-certificates software-properties-common -y
+      - run:
+          name: Install kubectl
+          command: |
+            apt-get update && \
+            apt-get install curl gnupg2 apt-transport-https -y
+
+            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
+            echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
+            apt-get update && \
+            apt-get install -y kubectl
+      - run:
+          name: Install kops
+          command: |
+            apt update && \
+            apt install curl -y
+
+            curl -LO https://github.com/kubernetes/kops/releases/download/\$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
+            chmod +x kops-linux-amd64 && \
+            mv kops-linux-amd64 /usr/local/bin/kops
+      - run:
+          name: Install Mustache templating engine
+          command: |
+            apt update && \
+            apt install curl -y
+
+            curl -sL https://deb.nodesource.com/setup_12.x | bash && \
+            apt-get install -y nodejs && \
+            npm install -g mustache
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Fetch kubectl config
+          command: kops export kubecfg k8s.ruchij.com
+          environment:
+            KOPS_STATE_STORE: s3://kops.ruchij.com
+      - run:
+          name: Render the K8s resource files
+          command: |
+            mkdir k8s-resources
+
+            for resource_file in `ls deploy/k8s/*`
+            do
+              cat data.json | mustache - \$resource_file > k8s-resources/`basename \$resource_file`
+            done
+      - run:
+          name: Create K8s Namespace
+          command: kubectl apply -f k8s-resources/namespace.yml
+      - run:
+          name: Create K8s ConfigMap
+          command: kubectl apply -f k8s-resources/config-map.yml
+      - run:
+          name: Deploy to K8s cluster
+          command: kubectl apply -f k8s-resources/
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - create_aws_resources:
+          context: aws-credentials
+      - compile_and_test:
+          requires:
+            - create_aws_resources
+      - push_docker_image:
+          context: aws-credentials
+          requires:
+            - compile_and_test
+      - deploy_api:
+          context: aws-credentials
+          requires:
+            - push_docker_image
+

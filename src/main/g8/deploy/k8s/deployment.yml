@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: $name;format="normalize"$
+  name: $name;format="normalize"$-{{{ branch }}}-deployment
+spec:
+  selector:
+    matchLabels:
+      app: $name;format="normalize"$-{{{ branch }}}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: $name;format="normalize"$-{{{ branch }}}
+    spec:
+      containers:
+        - name: $name;format="normalize"$-{{{ branch }}}
+          image: {{{ dockerImage }}}
+          ports:
+            - containerPort: 9000
+          envFrom:
+            - configMapRef:
+                name: $name;format="normalize"$-{{{ branch }}}-config-map
+          livenessProbe:
+            httpGet:
+              port: 9000
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 5
+
+
