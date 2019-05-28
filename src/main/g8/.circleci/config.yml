@@ -11,6 +11,11 @@ alias:
       apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823 && \
       apt-get update && \
       apt-get install sbt -y
+  - &install-jq
+    name: Install jq
+    command: |
+      apt update && \
+      apt install jq -y
   - &restore-sbt-cache
     keys:
       - sbt-cache-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}-{{ checksum "project/Dependencies.scala" }}
@@ -85,12 +90,8 @@ jobs:
 
             pip install awscli --upgrade --user && \
             ln -sf \$HOME/.local/bin/aws /usr/local/bin
-      - run:
-          name: Install jq
-          command: |
-            apt update && \
-            apt install jq -y
       - run: *install-terraform
+      - run: *install-jq
       - checkout
       - restore_cache: *restore-sbt-cache
       - run:
@@ -98,7 +99,13 @@ jobs:
           command: sbt dist
       - run:
           name: Build Docker image
-          command: docker build -t $name;format="normalize"$ -f Dockerfile-prod .
+          command: |
+            docker build \
+              -t $name;format="normalize"$ \
+              --build-arg git_commit=`git rev-parse --short HEAD` \
+              --build-arg git_branch=`git rev-parse --abbrev-ref HEAD` \
+              --build-arg build_timestamp=`date --iso-8601=seconds` \
+              -f Dockerfile-prod .
       - run:
           name: Login to ECR
           command: aws ecr get-login --no-include-email --region ap-southeast-2 | bash
@@ -128,9 +135,8 @@ jobs:
             EOF
 
             cat > config-values.yml << EOF
-              GIT_COMMIT: \$git_commit_hash
-              GIT_BRANCH: \$git_branch
-              BUILD_TIMESTAMP: \$build_timestamp
+              SAMPLE_KEY_1: SAMPLE_VALUE_1
+              SAMPLE_KEY_2: SAMPLE_VALUE_2
             EOF
       - persist_to_workspace:
           root: .
@@ -175,6 +181,7 @@ jobs:
             curl -sL https://deb.nodesource.com/setup_12.x | bash && \
             apt-get install -y nodejs && \
             npm install -g mustache
+      - run: *install-jq
       - checkout
       - attach_workspace:
           at: .
@@ -203,6 +210,12 @@ jobs:
       - run:
           name: Deploy to K8s cluster
           command: kubectl apply -f k8s-resources/
+      - run:
+          name: Wait for succesful deployment
+          command: |
+            kubectl rollout status \
+              deployment/$name;format="normalize"$-`cat data.json | jq .branch | tr -d '"'`-deployment \
+              --namespace=$name;format="normalize"$
 
 workflows:
   version: 2

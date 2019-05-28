@@ -12,6 +12,14 @@ RUN unzip $name;format="normalize"$-*.zip -d build && \
 
 FROM openjdk:8-jdk-slim
 
+ARG git_branch
+ARG git_commit
+ARG build_timestamp
+
+ENV GIT_BRANCH \$git_branch
+ENV GIT_COMMIT \$git_commit
+ENV DOCKER_BUILD_TIMESTAMP \$build_timestamp
+
 WORKDIR /opt/$name;format="normalize"$
 
 COPY --from=builder /opt/$name;format="normalize"$ .
