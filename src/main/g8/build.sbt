@@ -18,3 +18,5 @@ lazy val root =
 lazy val rootDependencies = Seq(guice, jodaTime)
 
 lazy val rootTestDependencies = Seq(scalaTestPlusPlay, pegdown)
+
+addCommandAlias("testWithCoverage", "; coverage; test; coverageReport")
