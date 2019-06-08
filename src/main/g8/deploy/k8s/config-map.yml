@@ -4,4 +4,6 @@ metadata:
   namespace: $name;format="normalize"$
   name: $name;format="normalize"$-{{{ branch }}}-config-map
 data:
-  SAMPLE_KEY_1: SAMPLE_VALUE_1
+{{ #configMap }}
+  {{{ key }}}: {{{ value }}}
+{{ /configMap }}
