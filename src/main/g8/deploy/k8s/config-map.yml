@@ -4,4 +4,4 @@ metadata:
   namespace: $name;format="normalize"$
   name: $name;format="normalize"$-{{{ branch }}}-config-map
 data:
-  ALLOWED_HOSTS: "."
+  SAMPLE_KEY_1: SAMPLE_VALUE_1

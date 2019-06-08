@@ -135,8 +135,8 @@ jobs:
             EOF
 
             cat > config-values.yml << EOF
-              SAMPLE_KEY_1: SAMPLE_VALUE_1
               SAMPLE_KEY_2: SAMPLE_VALUE_2
+              SAMPLE_KEY_3: SAMPLE_VALUE_3
             EOF
       - persist_to_workspace:
           root: .
