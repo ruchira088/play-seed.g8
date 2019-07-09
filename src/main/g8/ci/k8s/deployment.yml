@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: $name;format="normalize"$
+  name: $name;format="normalize"$-{{ git_branch }}-deployment
+spec:
+  selector:
+    matchLabels:
+      app: $name;format="normalize"$-{{ git_branch }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: $name;format="normalize"$-{{ git_branch }}
+    spec:
+      containers:
+        - name: $name;format="normalize"$-{{ git_branch }}
+          image: {{ docker_image }}
+          ports:
+            - containerPort: 9000
+          envFrom:
+            - configMapRef:
+                name: $name;format="normalize"$-{{ git_branch }}-config-map
+          env:
+{% for key, value in secrets.items() %}
+            - name: {{ key }}
+              valueFrom:
+                secretKeyRef:
+                  name: $name;format="normalize"$-{{ git_branch }}-secrets
+                  key: {{ key }}
+{% endfor %}
+          livenessProbe:
+            httpGet:
+              port: 9000
+              path: /health
+            initialDelaySeconds: 15
+            periodSeconds: 5
+
+

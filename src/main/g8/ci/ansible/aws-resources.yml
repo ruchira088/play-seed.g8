@@ -1,0 +1,12 @@
+---
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Create shared AWS resources
+      terraform:
+        project_path: ../terraform/shared
+        force_init: true
+      register: terraform_shared_output
+
+    - set_fact:
+        ecr_url: "{{ terraform_shared_output.outputs.ecr_url.value }}"

@@ -1,0 +1,38 @@
+---
+- import_playbook: values.yml
+- import_playbook: aws-resources.yml
+- hosts: localhost
+  connection: local
+  vars_prompt:
+    - name: circle_ci_build_number
+      private: no
+      default: local
+  tasks:
+    - name: Build production application binary
+      shell: |
+        cd ../../
+
+        sbt clean dist
+
+    - name: Build production Docker image
+      shell: |
+        cd ../../
+
+        docker build \
+          -t $name;format="normalize"$:{{ git_commit }} \
+          --build-arg git_commit={{ git_commit }} \
+          --build-arg git_branch={{ git_branch }} \
+          --build-arg build_timestamp={{ ansible_date_time.iso8601 }} \
+          -f Dockerfile-prod .
+
+    - name: Login to ECR
+      shell: \$(aws ecr get-login --no-include-email --region ap-southeast-2)
+
+    - name: Push Docker image to ECR
+      shell: |
+        docker tag $name;format="normalize"$:{{ git_commit }} {{ ecr_url }}:{{ item }}
+        docker push {{ ecr_url }}:{{ item }}
+      with_items:
+        - "{{ git_commit }}"
+        - "{{ git_branch }}-{{ circle_ci_build_number }}"
+        - "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}-{{ git_branch }}"

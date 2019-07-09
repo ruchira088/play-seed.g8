@@ -2,17 +2,17 @@ apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
 metadata:
   namespace: $name;format="normalize"$
-  name: $name;format="normalize"$-{{{ branch }}}-certificate
+  name: $name;format="normalize"$-{{ git_branch }}-certificate
 spec:
-  secretName: {{{ branch }}}-$name;format="normalize"$-tls
+  secretName: {{ git_branch }}-$name;format="normalize"$-tls
   issuerRef:
     name: lets-encrypt
     kind: ClusterIssuer
   dnsNames:
-    - {{{ branch }}}.$name;format="normalize"$.ruchij.com
+    - {{ git_branch }}.$name;format="normalize"$.ruchij.com
   acme:
     config:
       - dns01:
           provider: route53-dns
         domains:
-          - {{{ branch }}}.$name;format="normalize"$.ruchij.com
+          - {{ git_branch }}.$name;format="normalize"$.ruchij.com
