@@ -1,5 +1,4 @@
 ---
-- import_playbook: values.yml
 - import_playbook: aws-resources.yml
 - hosts: localhost
   connection: local
@@ -8,6 +7,8 @@
       private: no
       default: local
   tasks:
+    - include: tasks/values.yml
+
     - name: Build production application binary
       shell: |
         cd ../../
