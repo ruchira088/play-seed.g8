@@ -19,9 +19,9 @@
     - name: Render K8s resource files
       template:
         src: "{{ item }}"
-        dest: "output/{{ item | basename }}"
+        dest: "output/{{ item | basename | regex_replace('.j2') }}"
       with_fileglob:
-        - ../k8s/*.yml
+        - ../k8s/*.yml.j2
 
     - name: Fetch kubectl configuration
       shell: KOPS_STATE_STORE="{{ kops_state_store }}" kops export kubecfg k8s.ruchij.com
