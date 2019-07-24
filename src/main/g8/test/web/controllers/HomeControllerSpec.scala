@@ -1,6 +1,7 @@
 package web.controllers
 
-import bindings.GuiceUtils._
+import modules.GuiceBindings._
+import bindings.GuiceUtils.application
 import config.SystemUtilities
 import org.joda.time.DateTime
 import org.scalatestplus.play._
