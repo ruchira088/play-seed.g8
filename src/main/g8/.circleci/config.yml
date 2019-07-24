@@ -29,7 +29,7 @@ alias:
       apt update \
       && apt install curl -y
 
-      curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-"${DOCKER_VERSION}".tgz && \
+      curl -L -o /tmp/docker.tgz https://download.docker.com/linux/static/stable/x86_64/docker-"\${DOCKER_VERSION}".tgz && \
       tar -xv -C /tmp -f /tmp/docker.tgz && \
       mv /tmp/docker/* /usr/local/bin
     environment:
@@ -41,7 +41,7 @@ alias:
       apt update && \
       apt install unzip curl -y
 
-      curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_"${TERRAFORM_VERSION}"_linux_amd64.zip && \
+      curl -L -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/\$TERRAFORM_VERSION/terraform_"\${TERRAFORM_VERSION}"_linux_amd64.zip && \
       unzip -d /tmp /tmp/terraform.zip && \
       chmod +x /tmp/terraform && \
       mv /tmp/terraform /usr/local/bin
