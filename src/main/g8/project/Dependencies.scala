@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  val SCALA_VERSION = "2.12.10"
+  val SCALA_VERSION = "2.13.1"
 
   lazy val jodaTime = "joda-time" % "joda-time" % "2.10.4"
 
