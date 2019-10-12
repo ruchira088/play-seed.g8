@@ -4,9 +4,6 @@ import play.api.Application
 import play.api.inject.Binding
 import play.api.inject.guice.{GuiceApplicationBuilder, GuiceableModule}
 
-import scala.language.implicitConversions
-import scala.reflect.ClassTag
-
 object GuiceUtils {
   def application(guiceableModules: List[GuiceableModule], bindings: Binding[_]*): Application =
     GuiceApplicationBuilder()
