@@ -26,6 +26,4 @@ COPY --from=builder /opt/$name;format="normalize"$ .
 
 EXPOSE 9000
 
-ENTRYPOINT ["bash"]
-
 CMD ["/opt/$name;format="normalize"$/bin/$name;format="normalize"$"]
