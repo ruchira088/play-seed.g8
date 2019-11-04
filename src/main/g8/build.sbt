@@ -12,6 +12,7 @@ lazy val root =
       buildInfoKeys := BuildInfoKey.ofN(name, organization, version, scalaVersion, sbtVersion),
       buildInfoPackage := "com.eed3si9n.ruchij",
       scalacOptions ++= Seq("-Xlint"),
+      topLevelDirectory := None,
       addCompilerPlugin(kindProjector),
       testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-results/unit-tests"),
       libraryDependencies ++= rootDependencies ++ rootTestDependencies.map(_ % Test)

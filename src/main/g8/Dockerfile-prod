@@ -1,15 +1,3 @@
-FROM ubuntu:18.04 as builder
-
-WORKDIR /opt
-
-RUN apt update && \
-    apt install unzip -y
-
-COPY target/universal .
-
-RUN unzip $name;format="normalize"$-*.zip -d build && \
-    mv build/$name;format="normalize"$-* $name;format="normalize"$
-
 FROM openjdk:8-jdk-slim
 
 ARG git_branch="unspecified"
@@ -22,8 +10,8 @@ ENV DOCKER_BUILD_TIMESTAMP \$build_timestamp
 
 WORKDIR /opt/$name;format="normalize"$
 
-COPY --from=builder /opt/$name;format="normalize"$ .
+ADD target/universal/$name;format="normalize"$-*.tgz .
 
 EXPOSE 9000
 
-CMD ["/opt/$name;format="normalize"$/bin/$name;format="normalize"$"]
+CMD [ "/opt/$name;format="normalize"$/bin/$name;format="normalize"$" ]
