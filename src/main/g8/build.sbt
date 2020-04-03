@@ -14,6 +14,7 @@ lazy val root =
       scalacOptions ++= Seq("-Xlint", "-feature"),
       topLevelDirectory := None,
       addCompilerPlugin(kindProjector),
+      addCompilerPlugin(scalaTypedHoles),
       testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-h", "target/test-results/unit-tests"),
       libraryDependencies ++= rootDependencies ++ rootTestDependencies.map(_ % Test)
     )
