@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-slim
+FROM openjdk:11-jre-slim
 
 ARG git_branch="unspecified"
 ARG git_commit="unspecified"
@@ -7,6 +7,9 @@ ARG build_timestamp="1970-01-01T00:00:00Z"
 ENV GIT_BRANCH \$git_branch
 ENV GIT_COMMIT \$git_commit
 ENV DOCKER_BUILD_TIMESTAMP \$build_timestamp
+
+RUN apt-get update && \
+    apt-get upgrade -y
 
 WORKDIR /opt/$name;format="normalize"$
 

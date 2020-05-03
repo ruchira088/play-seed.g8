@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 alias:
   - &restore-sbt-cache
@@ -46,7 +46,7 @@ alias:
       chmod +x /tmp/terraform && \
       mv /tmp/terraform /usr/local/bin
     environment:
-      TERRAFORM_VERSION: 0.12.5
+      TERRAFORM_VERSION: 0.12.24
 
   - &aws-cli
     name: Install AWS CLI
@@ -100,7 +100,7 @@ jobs:
 
   compile_and_test:
     docker:
-      - image: openjdk:8-jdk
+      - image: openjdk:11-jdk
     steps:
       - run: *sbt
       - checkout
@@ -122,7 +122,7 @@ jobs:
 
   push_docker_image:
     docker:
-      - image: openjdk:8-jdk
+      - image: openjdk:11-jdk
     steps:
       - setup_remote_docker:
           version: 18.09.3
