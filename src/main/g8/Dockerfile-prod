@@ -8,9 +8,6 @@ ENV GIT_BRANCH \$git_branch
 ENV GIT_COMMIT \$git_commit
 ENV DOCKER_BUILD_TIMESTAMP \$build_timestamp
 
-RUN apt-get update && \
-    apt-get upgrade -y
-
 WORKDIR /opt/$name;format="normalize"$
 
 ADD target/universal/$name;format="normalize"$-*.tgz .
