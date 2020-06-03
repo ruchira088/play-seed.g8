@@ -11,5 +11,7 @@ object Dependencies {
 
   lazy val scalaTestPlusPlay = "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0"
 
+  lazy val flexMarkAll = "com.vladsch.flexmark" % "flexmark-all" % "0.35.10"
+
   lazy val pegdown = "org.pegdown" % "pegdown" % "1.6.0"
 }
