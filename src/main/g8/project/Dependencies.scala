@@ -1,11 +1,11 @@
 import sbt._
 
 object Dependencies {
-  val SCALA_VERSION = "2.13.2"
+  val SCALA_VERSION = "2.13.3"
 
   lazy val kindProjector = "org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full
 
-  lazy val scalaTypedHoles = "com.github.cb372" % "scala-typed-holes" % "0.1.3.3" cross CrossVersion.full
+  lazy val scalaTypedHoles = "com.github.cb372" % "scala-typed-holes" % "0.1.4" cross CrossVersion.full
 
   lazy val jodaTime = "joda-time" % "joda-time" % "2.10.6"
 
